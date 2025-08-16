@@ -1,17 +1,24 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 import Navbar from "../../Component/Navbar/Navbar";
-import { Toaster } from "react-hot-toast";
+import { useContext } from "react";
+import { UserInfoContext } from "../../Context/UserInfo/UserInfoContextProvider";
 
 const LayoutApp = () => {
-  return (
-    <main className=" min-h-screen">
-      {/* The Toaster component is used to display notifications */}
-      <Toaster position="top-center" reverseOrder={false} />;
-      <Navbar />
-      {/* Render child routes */}
-      <Outlet />
-    </main>
-  );
+  const { token } = useContext(UserInfoContext);
+
+  console.log("Token in LayoutApp:", token);
+  
+
+  if (token != null) {
+    return (
+      <main className="min-h-screen">
+        <Navbar />
+        <Outlet />
+      </main>
+    );
+  } else {
+    return <Navigate to="/login" />;
+  }
 };
 
 export default LayoutApp;

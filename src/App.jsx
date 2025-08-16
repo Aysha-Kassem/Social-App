@@ -9,6 +9,10 @@ import NotFound from "./Pages/NotFound/NotFound";
 import Home from "./Pages/Home/Home";
 import Login from "./Pages/Login/Login";
 import Register from "./Pages/Register/Register";
+import UserInfoContextProvider from "./Context/UserInfo/UserInfoContextProvider";
+
+// Component
+import { Toaster } from "react-hot-toast";
 
 const App = () => {
   const Router = createBrowserRouter([
@@ -22,10 +26,12 @@ const App = () => {
     { path: "*", element: <NotFound /> },
   ]);
   return (
-    <div className="bg-white dark:bg-black ">
+    <UserInfoContextProvider className="bg-white dark:bg-black ">
+      {/* The Toaster component is used to display notifications */}
+      <Toaster position="top-center" reverseOrder={false} />
       {/* Router */}
       <RouterProvider router={Router} />
-    </div>
+    </UserInfoContextProvider>
   );
 };
 

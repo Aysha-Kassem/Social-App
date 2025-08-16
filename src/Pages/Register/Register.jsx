@@ -1,10 +1,25 @@
+// Fetch API
+import axios from "axios";
+
+// React and React Router
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+// React Hook Form for form handling
 import { useForm } from "react-hook-form";
+
+// React Hot Toast for notifications
 import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
+
+// Loader component for loading state
+import { Circles } from "react-loader-spinner";
 
 const Register = () => {
-  const [loding, setLoding] = useState(false);
+  // State
+  const [loading, setLoading] = useState(false);
+
+  // navigate
+  const navigate = useNavigate();
 
   // useForm hook from react-hook-form for form handling
   const {
@@ -14,19 +29,19 @@ const Register = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
-    console.log(errors);
+  const signup = async (values) => {
+    setLoading(true);
     try {
-      setLoding(true);
-      // Simulate a registration API call
-      setTimeout(() => {
-        setLoding(false);
-        toast.success("Registration successful!");
-      }, 2000);
+      const { data } = await axios.post(
+        "https://linked-posts.routemisr.com/users/signup",
+        values
+      );
+      toast.success(data.message);
+      setLoading(false);
+      navigate("/login");
     } catch (error) {
-      setLoding(false);
-      toast.error("Registration failed. Please try again.");
+      setLoading(false);
+      toast.error(error?.response?.data?.error || "Registration failed");
     }
   };
 
@@ -36,7 +51,7 @@ const Register = () => {
         Linked Posts
       </h1>
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(signup)}
         className="p-10 flex flex-col gap-4 w-3/4 ring-2 ring-blue-50 dark:ring-blue-950 rounded-lg shadow-lg shadow-blue-50 dark:shadow-blue-950"
       >
         <h4 className="text-blue-700 dark:text-blue-300 text-xl">
@@ -44,8 +59,8 @@ const Register = () => {
         </h4>
         {/* name */}
         <input
-          type="text"
           name="name"
+          type="text"
           placeholder="Type your name.."
           className="input input-md w-full *:focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 "
           {...register("name", {
@@ -67,13 +82,16 @@ const Register = () => {
             },
           })}
         />
+        {errors.name && (
+          <span className="text-red-500 text-sm">{errors.name.message}</span>
+        )}
         {/* email */}
         <input
           name="email"
           type="email"
           placeholder="Type your email.."
           className="input input-md w-full *:focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 "
-          {...register("name", {
+          {...register("email", {
             required: {
               value: true,
               message: "Email is required",
@@ -84,19 +102,22 @@ const Register = () => {
             },
           })}
         />
+        {errors.email && (
+          <span className="text-red-500 text-sm">{errors.email.message}</span>
+        )}
         {/* password */}
         <input
           name="password"
           type="password"
           placeholder="Type your password.."
           className="input input-md w-full *:focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 "
-          {...register("name", {
+          {...register("password", {
             required: {
               value: true,
               message: "Password is required",
             },
             minLength: {
-              value: 6,
+              value: 8,
               message: "Password must be at least 6 characters",
             },
             maxLength: {
@@ -111,13 +132,18 @@ const Register = () => {
             },
           })}
         />
+        {errors.password && (
+          <span className="text-red-500 text-sm">
+            {errors.password.message}
+          </span>
+        )}
         {/* rePassword */}
         <input
           name="rePassword"
           type="password"
           placeholder="confirm password"
           className="input input-md w-full *:focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 "
-          {...register("name", {
+          {...register("rePassword", {
             required: {
               value: true,
               message: "Confirm password is required",
@@ -126,13 +152,18 @@ const Register = () => {
               value === watch("password") || "Passwords do not match",
           })}
         />
+        {errors.rePassword && (
+          <span className="text-red-500 text-sm">
+            {errors.rePassword.message}
+          </span>
+        )}
         {/* dateOfBirth */}
         <input
           name="dateOfBirth"
           type="date"
           placeholder="Select date"
           className="input w-full *:focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 "
-          {...register("name", {
+          {...register("dateOfBirth", {
             required: {
               value: true,
               message: "Date of birth is required",
@@ -140,19 +171,24 @@ const Register = () => {
             validate: (value) => {
               const today = new Date();
               const selectedDate = new Date(value);
-              return (
-                today - selectedDate >= 18 ||
-                "Date of birth cannot be in the future"
-              );
+              const age = today.getFullYear() - selectedDate.getFullYear();
+              return age >= 18 || "You must be at least 18 years old";
             },
           })}
         />
+        {errors.dateOfBirth && (
+          <span className="text-red-500 text-sm">
+            {errors.dateOfBirth.message}
+          </span>
+        )}
         {/* gender */}
         <div className="flex items-center gap-10">
           <div className="flex items-center gap-2">
             <input
               type="radio"
               name="gender"
+              value="male"
+              id="male"
               className="radio radio-sm *:focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 "
               {...register("gender", {
                 required: {
@@ -160,14 +196,15 @@ const Register = () => {
                   message: "gender is required",
                 },
               })}
-              checked="checked"
             />
-            <label for="">Male</label>
+            <label htmlFor="male">Male</label>
           </div>
           <div className="flex items-center gap-2">
             <input
               type="radio"
               name="gender"
+              value="female"
+              id="female"
               className="radio radio-md *:focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 "
               {...register("gender", {
                 required: {
@@ -175,29 +212,33 @@ const Register = () => {
                   message: "gender is required",
                 },
               })}
-              checked="checked"
             />
-            <label for="">Female</label>
+            <label htmlFor="female">Female</label>
           </div>
         </div>
+        {errors.gender && (
+          <span className="text-red-500 text-sm">{errors.gender.message}</span>
+        )}
         {/* submit button */}
-        <button className="btn btn-primary btn-md">Register</button>
+        <button className="btn btn-primary btn-md">
+          {loading ? (
+            <Circles
+              height="20"
+              width="20"
+              color="white"
+              ariaLabel="circles-loading"
+              wrapperStyle={{}}
+              wrapperClass=""
+              visible={true}
+            />
+          ) : (
+            "Register"
+          )}
+        </button>
         <p className="text-sm text-blue-700 dark:text-blue-300">
           Already have an account?{" "}
           <Link to="/login" className="text-blue-500 dark:text-blue-400">
-            {loding ? (
-              <Circles
-                height="80"
-                width="80"
-                color="blue" 
-                ariaLabel="circles-loading"
-                wrapperStyle={{}}
-                wrapperClass=""
-                visible={true}
-              />
-            ) : (
-              "Login"
-            )}
+            login
           </Link>
         </p>
       </form>
